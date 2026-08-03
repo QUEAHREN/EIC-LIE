@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+*.log
+*.state
+.idea/
+.vscode/
+experiments/
+results/
+tb_logger/
+wandb/

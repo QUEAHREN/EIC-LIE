@@ -1,0 +1,93 @@
+name: EIC-LIE_SDSDout
+model_type: EICLIEModel
+scale: 1
+num_gpu: 1
+manual_seed: 10
+auto_resume: false
+
+datasets:
+  train:
+    name: SDSDout-train
+    type: SingleH5ImageDataset
+    dataroot: /path/to/datasets/SDSD/outdoor/train
+    norm_voxel: true
+    crop_size: 128
+    use_flip: true
+    use_rot: true
+    num_worker_per_gpu: 8
+    batch_size_per_gpu: 24
+    dataset_enlarge_ratio: 1
+    prefetch_mode: cpu
+    num_prefetch_queue: 2
+  val:
+    name: SDSDout-test
+    type: SingleH5ImageDataset
+    dataroot: /path/to/datasets/SDSD/outdoor/test
+    norm_voxel: true
+    crop_size: ~
+    use_flip: false
+    use_rot: false
+
+network_g:
+  type: EIC-LIE
+  in_channels: 3
+  out_channels: 3
+  n_feat: 40
+  level: 2
+  num_blocks: [1, 2]
+  use_fsas: true
+
+path:
+  pretrain_network_g: ~
+  strict_load_g: true
+  resume_state: ~
+  root: /output
+
+train:
+  optim_g:
+    type: AdamW
+    lr: !!float 2e-4
+    weight_decay: !!float 1e-2
+    betas: [0.9, 0.99]
+  scheduler:
+    type: CosineAnnealingRestartCyclicLR
+    periods: [25000, 50000]
+    restart_weights: [1, 1]
+    eta_mins: [0.0005, 0.000001]
+  total_iter: 75000
+  warmup_iter: -1
+  use_grad_clip: false
+  pixel_opt:
+    type: CharbonnierLoss
+    loss_weight: 1.0
+    reduction: mean
+    eps: !!float 1e-6
+
+val:
+  val_freq: 2500
+  save_img: false
+  save_best: true
+  key_metric: psnr
+  max_minibatch: 1
+  rgb2bgr: false
+  use_image: true
+  metrics:
+    psnr:
+      type: calculate_psnr
+      crop_border: 0
+      test_y_channel: false
+    ssim:
+      type: calculate_ssim
+      crop_border: 0
+      test_y_channel: false
+
+logger:
+  print_freq: 200
+  save_checkpoint_freq: 2500
+  use_tb_logger: true
+  wandb:
+    project: ~
+
+dist_params:
+  backend: nccl
+  port: 29500

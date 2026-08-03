@@ -1,0 +1,45 @@
+name: EIC-LIE_RLE
+model_type: EICLIEModel
+scale: 1
+num_gpu: 1
+manual_seed: 10
+
+datasets:
+  test:
+    name: RLE-test
+    type: SingleH5ImageDataset
+    dataroot: /path/to/datasets/RLE/test
+    norm_voxel: true
+    crop_size: ~
+    use_flip: false
+    use_rot: false
+
+network_g:
+  type: EIC-LIE
+  in_channels: 3
+  out_channels: 3
+  n_feat: 40
+  level: 2
+  num_blocks: [1, 2]
+  use_fsas: true
+
+path:
+  pretrain_network_g: ~
+  strict_load_g: true
+  root: /output
+
+val:
+  save_img: true
+  max_minibatch: 1
+  rgb2bgr: false
+  use_image: true
+  key_metric: psnr
+  metrics:
+    psnr:
+      type: calculate_psnr
+      crop_border: 16
+      test_y_channel: false
+    ssim:
+      type: calculate_ssim
+      crop_border: 16
+      test_y_channel: false
